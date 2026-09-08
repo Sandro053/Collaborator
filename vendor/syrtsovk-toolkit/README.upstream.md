@@ -1,0 +1,223 @@
+# Syrtsovk Toolkit
+
+Коллекция **скиллов** для [Claude](https://claude.com) — моя личная подборка, которую я использую в повседневной работе и постепенно выкладываю сюда.
+
+Скиллы работают везде, где Claude поддерживает [Agent Skills](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview):
+
+- **Claude Code** (CLI) — файлы в `~/.claude/skills/`
+- **Claude.ai** (web / desktop) — через Settings → Features → Skills
+- **Claude Agent SDK / Anthropic API** — программно через Skills API
+
+> Каждый скилл — это папка с `SKILL.md` (YAML frontmatter + инструкции) и опциональными `references/`. Claude сам подхватывает скилл по полю `description`, когда видит подходящий запрос.
+
+---
+
+## Содержание
+
+### Skills
+
+| Скилл | Для чего | Ссылка |
+|-------|----------|--------|
+| `promptmaker` | Элитный промпт-инженер: генерирует готовые XML-промпты для виртуальных AI-экспертов. Анализирует задачу, подбирает модули, прогоняет Self-Refine и Constitutional Principles. | [skills/promptmaker](skills/promptmaker/) |
+| `pluginmaker` | Скилл, который делает скиллы: короткое интервью на 4-6 вопросов → готовая папка скилла для Claude Code. Шесть типов каркасов, проверка в три уровня (линтер, тестер срабатываний, аудитор качества) перед выдачей. | [skills/pluginmaker](skills/pluginmaker/) |
+| `design-expert` | Эксперт-ассистент по Claude Design: составляет промпты для генерации презентаций / лендингов / прототипов / инфографики, подбирает стили и настройки, решает задачи в продукте Claude Design. | [skills/design-expert](skills/design-expert/) |
+| `promptscanner` | Промтсканнер: анализирует чужие промты, выдаёт балл 0-100 и честный разбор — что грамотно, что недоработано, что реально получишь на выходе. Защищён от prompt injection. | [skills/promptscanner](skills/promptscanner/) |
+| `task-arena` | Универсальная арена-оркестратор: берёт любую задачу, проясняет её вопросами и собирает бриф, затем сам проектирует команду агентов-специалистов, пишет им роли, запускает параллельно и доводит до результата — артефакт, изменения в проекте или рекомендацию. С гейтом definition of done, критиком и devil's advocate. | [skills/task-arena](skills/task-arena/) |
+| `vibecheck` | Аудитор проекта: ищет утечки ключей, дыры в безопасности и мёртвый код по всему репозиторию. Детерминированные python-скрипты без зависимостей плюс проход модели поверх. Отчёт устроен так, чтобы починить самому: уровень срочности → что нашли → почему это опасно простым языком → как исправить. | [plugins/vibecheck](plugins/vibecheck/) |
+| `humanvoice` **v2.6** | Редактор живого русского: находит и убирает следы нейросети и возвращает тексту человеческий голос. Смотрит на текст как на 6 слоёв следов. Дай вместе с текстом исходник — покажет, что модель дописала за тебя: причину, которой ты не называл, уверенность, которой у тебя не было. Два режима — диагностика и правка. Не выдумывает, не переусердствует. | [skills/humanvoice](skills/humanvoice/) |
+| `kp-writer` | Коммерческие предложения по методологии AJTBD Ивана Замесина, в две фазы: пишет текст под конкретного клиента и **останавливается**, чтобы вы его прочитали; по команде собирает из него веб-страницу одним файлом — графики, макет продукта, калькулятор сборки, открывается без интернета. Ставится агентом по [INSTALL.md](skills/kp-writer/INSTALL.md), [пример на выходе](skills/kp-writer/example/). | [skills/kp-writer](skills/kp-writer/) |
+
+### Prompts
+
+| Промт | Для чего | Ссылка |
+|-------|----------|--------|
+| `promptscanner` | Промтсканнер — проверь чужой промт за 30 секунд: балл 0-100, что грамотно, что недоработано, что реально получишь на выходе. Защищён от prompt injection. | [prompts/promptscanner](prompts/promptscanner/) |
+
+### Guides
+
+| Гайд | Для чего | Ссылка |
+|------|----------|--------|
+| Ключевые файлы кодинг-агентов | CLAUDE.md, AGENTS.md, .cursorrules, GEMINI.md простыми словами: что это, зачем и как написать правильно. Шпаргалка по Claude Code / Codex / Cursor / Gemini / Antigravity, антипаттерны, лайфхаки, готовый шаблон. | [guides/](guides/) |
+
+### Toolkits
+
+Наборы файлов под целую задачу: методология + промпты + шаблоны + примеры. Можно отдать своей нейросети целиком — она прочитает и проведёт по процессу.
+
+| Тулкит | Для чего | Ссылка |
+|--------|----------|--------|
+| `competitor-intel` | Конкурентная разведка через AI: собрать стратегическое досье на конкурента из открытых источников (видео, отзывы, найм, сайт) и понять, куда он движется и где его обойти. Готовые паки промптов для Perplexity и NotebookLM, шаблоны досье, AJTBD-слой, заполненный пример. Отдайте нейросети файл `start-here-for-ai.md` — она запустит весь процесс. | [competitor-intel/](competitor-intel/) |
+
+### Commands
+
+_Slash-команды для Claude Code — скоро добавлю._
+
+---
+
+## Самый быстрый способ для `vibecheck`
+
+Дайте своему AI-агенту ссылку и одну фразу — дальше он всё сделает сам:
+
+```
+https://github.com/syrtsovk/Syrtsovk_toolkit/tree/main/plugins/vibecheck
+
+поставь всё и проверь проект
+```
+
+Внутри папки лежит `start-here-for-ai.md` — инструкция для агента: как поставить в его среде, как запустить, что искать глазами и где оставить отчёт.
+
+## Установка
+
+### 0. Плагином — одной командой (пока только `vibecheck`)
+
+**Claude Code:**
+```
+/plugin marketplace add https://github.com/syrtsovk/Syrtsovk_toolkit
+/plugin install vibecheck@syrtsovk-toolkit
+```
+
+**Codex:**
+```bash
+codex plugin marketplace add https://github.com/syrtsovk/Syrtsovk_toolkit
+codex plugin add vibecheck@syrtsovk-toolkit
+```
+
+Ставит скилл и обновляется одной командой. В Claude Code вдобавок включается крючок, который не даёт записать ключ в код. Остальные скиллы пока подключаются вручную — способом ниже.
+
+### 1. Claude Code (CLI)
+
+Самый простой способ — клонировать репо и симлинкнуть нужные скиллы:
+
+```bash
+# клонируем в удобное место
+git clone https://github.com/syrtsovk/Syrtsovk_toolkit.git ~/syrtsovk-toolkit
+
+# симлинкаем нужный скилл (user-level, доступен во всех проектах)
+mkdir -p ~/.claude/skills
+ln -s ~/syrtsovk-toolkit/skills/promptmaker ~/.claude/skills/promptmaker
+```
+
+Для project-level (только в одном проекте) — положи в `<project>/.claude/skills/` вместо `~/.claude/skills/`.
+
+После этого скилл подхватится автоматически. Проверить можно так:
+- Открой Claude Code в любом проекте
+- Набери что-то, что триггерит описание скилла (например: «сделай мне промпт для эксперта по X»)
+- Claude сам загрузит `SKILL.md` и применит его
+
+Обновления — `cd ~/syrtsovk-toolkit && git pull`. Симлинки остаются валидными.
+
+#### У `kp-writer` установка своя
+
+У него есть зависимости (канон методологии, опциональный плагин) и профиль,
+который надо заполнить под себя. Всё это описано в
+**[skills/kp-writer/INSTALL.md](skills/kp-writer/INSTALL.md)** — файл написан так,
+чтобы его выполнил ваш агент: отдайте ему ссылку и скажите «установи».
+
+#### Альтернатива: только один скилл через sparse-checkout
+
+```bash
+git clone --filter=blob:none --sparse https://github.com/syrtsovk/Syrtsovk_toolkit.git
+cd Syrtsovk_toolkit
+git sparse-checkout set skills/promptmaker
+cp -r skills/promptmaker ~/.claude/skills/
+```
+
+---
+
+### 2. Claude.ai (web / desktop)
+
+Доступно на **всех планах** (Free, Pro, Max, Team, Enterprise). Требование — включить «Code execution and file creation» в Settings.
+
+1. Склонируй репо (или скачай нужный скилл архивом)
+2. Запакуй папку скилла в ZIP:
+   ```bash
+   cd skills/
+   zip -r promptmaker.zip promptmaker/
+   ```
+3. В Claude.ai открой: **Settings → Features → Skills → `+` → Create skill**
+4. Загрузи `promptmaker.zip`
+5. После активации Claude будет подхватывать скилл по триггерам
+
+> Custom skills в Claude.ai приватны для твоего аккаунта и **не синкируются** с Claude Code / API.
+
+Официальная инструкция: [Use Skills in Claude](https://support.claude.com/en/articles/12512180-use-skills-in-claude).
+
+---
+
+### 3. Claude Agent SDK / Anthropic API
+
+Подключается программно через Skills API. Нужны три beta-header'а:
+
+```python
+from anthropic import Anthropic
+
+client = Anthropic(
+    default_headers={
+        "skills-2025-10-02": "true",
+        "code-execution-2025-08-25": "true",
+        "files-api-2025-04-14": "true",
+    }
+)
+
+# 1. Загрузить скилл через POST /v1/skills (получишь skill_id)
+# 2. Передать skill_id в container параметре сообщения
+```
+
+Подробности и актуальные примеры:
+- [Agent Skills Overview](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview)
+- [Use Skills with Claude API](https://platform.claude.com/docs/en/build-with-claude/skills-guide)
+- [Extend Claude with Skills (Claude Code)](https://code.claude.com/docs/en/skills)
+
+> Skills через API — workspace-wide (синкируются внутри workspace), но **не синкируются с Claude.ai**.
+
+---
+
+## Как устроен скилл
+
+Минимальная структура:
+
+```
+skills/<name>/
+├── SKILL.md                 # YAML frontmatter + инструкция
+└── references/              # опциональные материалы (knowledge base, примеры)
+    └── ...
+```
+
+`SKILL.md` начинается с frontmatter:
+
+```yaml
+---
+name: promptmaker
+description: "Короткое описание + триггеры активации"
+---
+```
+
+`description` — ключевое поле: Claude решает активировать скилл, анализируя его. Пиши чётко, с примерами триггеров.
+
+---
+
+## Обновления
+
+- Репозиторий пополняется постепенно
+- Breaking changes маркирую в описании скилла
+- Issues и PR приветствуются
+
+---
+
+## Заимствования
+
+Часть подхода в `vibecheck` опирается на MIT-проект
+[vibe-audit](https://github.com/haraldalder-vibemogger/vibe-audit), идеи по поиску
+неиспользуемого кода — из [плагинов Ильи Измайлова](https://github.com/izmailovilya/ilia-izmailov-plugins).
+Подробно, с текстом чужой лицензии — в [NOTICE](NOTICE).
+
+## Лицензия
+
+[MIT](LICENSE) — используй как хочешь, форкай, адаптируй под свой workflow.
+
+---
+
+## Контакты
+
+- [**Telegram**](https://t.me/+ygb6FUWDPDszNjQ6)
+- [**MAX**](https://max.ru/join/LKkLyQX7Ite2p_17YKNYQpeqLtfpfe9i1MyAgvEHYxM)
+- [**GitHub**](https://github.com/syrtsovk)
