@@ -1,0 +1,124 @@
+name: Import and sync AI projects
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/import-ai-projects.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  import-projects:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout destination repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Clone upstream repositories
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/syrtsovk-toolkit /tmp/compound-writing
+          git clone --depth 1 https://github.com/syrtsovk/Syrtsovk_toolkit.git /tmp/syrtsovk-toolkit
+          git clone --depth 1 https://github.com/EveryInc/compound-writing.git /tmp/compound-writing
+
+      - name: Import selected projects
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          ROOT="vendor"
+          SYR="$ROOT/syrtsovk-toolkit"
+          CW="$ROOT/compound-writing"
+
+          rm -rf "$ROOT"
+          mkdir -p "$SYR/skills" "$SYR/plugins" "$CW"
+
+          # 1. competitor-intel
+          cp -a /tmp/syrtsovk-toolkit/competitor-intel "$SYR/competitor-intel"
+
+          # 2. vibecheck
+          cp -a /tmp/syrtsovk-toolkit/plugins/vibecheck "$SYR/plugins/vibecheck"
+
+          # 3. pluginmaker
+          cp -a /tmp/syrtsovk-toolkit/skills/pluginmaker "$SYR/skills/pluginmaker"
+
+          # 4. humanvoice
+          cp -a /tmp/syrtsovk-toolkit/skills/humanvoice "$SYR/skills/humanvoice"
+
+          # 5. task-arena
+          cp -a /tmp/syrtsovk-toolkit/skills/task-arena "$SYR/skills/task-arena"
+
+          # 6. kp-writer
+          cp -a /tmp/syrtsovk-toolkit/skills/kp-writer "$SYR/skills/kp-writer"
+
+          # 7. promptmaker
+          cp -a /tmp/syrtsovk-toolkit/skills/promptmaker "$SYR/skills/promptmaker"
+
+          # Root metadata/manifests needed for licensing and plugin use.
+          cp -a /tmp/syrtsovk-toolkit/LICENSE "$SYR/LICENSE"
+          cp -a /tmp/syrtsovk-toolkit/NOTICE "$SYR/NOTICE"
+          cp -a /tmp/syrtsovk-toolkit/README.md "$SYR/README.upstream.md"
+          [ -d /tmp/syrtsovk-toolkit/.claude-plugin ] && cp -a /tmp/syrtsovk-toolkit/.claude-plugin "$SYR/.claude-plugin"
+          [ -d /tmp/syrtsovk-toolkit/.agents ] && cp -a /tmp/syrtsovk-toolkit/.agents "$SYR/.agents"
+
+          # 8. compound-writing — complete current repository snapshot, excluding only Git's internal .git database.
+          rsync -a --delete --exclude='.git' /tmp/compound-writing/ "$CW/"
+
+          SYR_SHA=$(git -C /tmp/syrtsovk-toolkit rev-parse HEAD)
+          CW_SHA=$(git -C /tmp/compound-writing rev-parse HEAD)
+          SYR_DATE=$(git -C /tmp/syrtsovk-toolkit show -s --format=%cI HEAD)
+          CW_DATE=$(git -C /tmp/compound-writing show -s --format=%cI HEAD)
+
+          cat > IMPORTED_PROJECTS.md <<EOF
+          # Imported AI projects
+
+          This repository contains local snapshots of eight upstream projects selected for later use.
+
+          ## Syrtsovk Toolkit snapshot
+
+          Upstream: https://github.com/syrtsovk/Syrtsovk_toolkit
+          Commit: \`$SYR_SHA\`
+          Commit date: \`$SYR_DATE\`
+
+          Imported projects:
+          1. \`competitor-intel\`
+          2. \`plugins/vibecheck\`
+          3. \`skills/pluginmaker\`
+          4. \`skills/humanvoice\`
+          5. \`skills/task-arena\`
+          6. \`skills/kp-writer\`
+          7. \`skills/promptmaker\`
+
+          Original MIT license and NOTICE are preserved under \`vendor/syrtsovk-toolkit/\`.
+
+          ## Compound Writing snapshot
+
+          Upstream: https://github.com/EveryInc/compound-writing
+          Commit: \`$CW_SHA\`
+          Commit date: \`$CW_DATE\`
+
+          The complete working tree is preserved under \`vendor/compound-writing/\`; only Git's internal \`.git\` database is excluded so it can live inside this repository normally. Its upstream license files are preserved in place.
+
+          ## Updating
+
+          Run the GitHub Actions workflow **Import and sync AI projects** manually. It re-clones both upstream repositories and refreshes the local snapshots.
+          EOF
+
+      - name: Commit imported snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add vendor IMPORTED_PROJECTS.md
+          if git diff --cached --quiet; then
+            echo "No upstream changes to commit."
+            exit 0
+          fi
+          git commit -m "Import 8 AI projects from upstream"
+          git push origin HEAD:main
